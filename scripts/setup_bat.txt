@@ -1,6 +1,6 @@
 @echo off
 :: Script de instalación para ML-TN-Sync en Windows
-:: Autor: [Tu Nombre]
+:: Autor: Kuca Belotti
 :: Fecha: Mayo 2025
 
 echo ===================================================
