@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script de ejecución para ML-TN-Sync en Linux/Mac
-# Autor: [Tu Nombre]
+# Autor: Luca Belotti
 # Fecha: Mayo 2025
 
 # Detectar directorio del proyecto
