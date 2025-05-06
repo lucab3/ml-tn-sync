@@ -1,0 +1,28 @@
+
+# Archivos de configuración con credenciales
+config/credentials.json
+
+# Entorno virtual
+venv/
+env/
+ml_tn_sync_env/
+
+# Archivos de caché
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+
+# Logs
+logs/*
+!logs/.gitkeep
+
+# Archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de IDE
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
