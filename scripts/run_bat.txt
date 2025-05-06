@@ -1,6 +1,6 @@
 @echo off
 :: Script de ejecución para ML-TN-Sync en Windows
-:: Autor: [Tu Nombre]
+:: Autor: Luca Belotti
 :: Fecha: Mayo 2025
 
 :: Obtener directorio del proyecto
