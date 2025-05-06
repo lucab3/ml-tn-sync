@@ -1,0 +1,57 @@
+@echo off
+:: Script de ejecución para ML-TN-Sync en Windows
+:: Autor: [Tu Nombre]
+:: Fecha: Mayo 2025
+
+:: Obtener directorio del proyecto
+set "SCRIPT_DIR=%~dp0"
+set "PROJECT_DIR=%SCRIPT_DIR%.."
+
+cd /d "%PROJECT_DIR%" || (
+    echo Error: No se pudo acceder al directorio del proyecto
+    exit /b 1
+)
+
+:: Verificar si el entorno virtual existe
+if not exist "ml_tn_sync_env" (
+    echo Error: Entorno virtual no encontrado
+    echo Ejecuta primero el script de instalación: scripts\setup.bat
+    exit /b 1
+)
+
+:: Activar entorno virtual
+call ml_tn_sync_env\Scripts\activate.bat
+
+:: Procesar argumentos
+set DRY_RUN=
+set DEBUG=
+
+:parse_args
+if "%~1"=="" goto run
+if "%~1"=="--dry-run" set DRY_RUN=--dry-run
+if "%~1"=="--debug" set DEBUG=--debug
+shift
+goto parse_args
+
+:run
+:: Ejecutar el sincronizador
+echo.
+echo Ejecutando ML-TN-Sync...
+python main.py %DRY_RUN% %DEBUG%
+
+:: Guardar código de salida
+set EXIT_CODE=%ERRORLEVEL%
+
+if %EXIT_CODE% EQU 0 (
+    echo.
+    echo Sincronización completada correctamente
+) else (
+    echo.
+    echo La sincronización falló con código de error: %EXIT_CODE%
+    echo Revisa los logs para más detalles
+)
+
+:: Desactivar entorno virtual
+call deactivate
+
+exit /b %EXIT_CODE%

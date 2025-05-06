@@ -1,0 +1,137 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Pruebas unitarias para el módulo de API de Tienda Nube.
+"""
+
+import os
+import sys
+import unittest
+import json
+from unittest import mock
+
+# Agregar el directorio raíz al path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
+from src.api.tiendanube import TiendaNubeAPI
+
+class TestTiendaNubeAPI(unittest.TestCase):
+    """Pruebas para la clase TiendaNubeAPI"""
+    
+    def setUp(self):
+        """Configuración antes de cada prueba"""
+        # Crear un archivo de configuración temporal para pruebas
+        self.test_config = {
+            "tiendanube": {
+                "api_key": "test_api_key",
+                "user_id": "12345"
+            }
+        }
+        
+        self.config_path = "test_config.json"
+        with open(self.config_path, 'w') as f:
+            json.dump(self.test_config, f)
+    
+    def tearDown(self):
+        """Limpieza después de cada prueba"""
+        # Eliminar archivo de configuración temporal
+        if os.path.exists(self.config_path):
+            os.remove(self.config_path)
+    
+    def test_load_config(self):
+        """Prueba la carga de configuración"""
+        api = TiendaNubeAPI(config_path=self.config_path)
+        
+        # Verificar que la configuración se haya cargado correctamente
+        self.assertEqual(api.api_key, "test_api_key")
+        self.assertEqual(api.user_id, "12345")
+        
+        # Verificar que la URL base y los headers se hayan configurado correctamente
+        self.assertEqual(api.base_url, "https://api.tiendanube.com/v1/12345")
+        self.assertEqual(api.headers["Authentication"], "bearer test_api_key")
+    
+    @mock.patch('requests.get')
+    def test_get_products(self, mock_get):
+        """Prueba la función de obtención de productos"""
+        # Configurar mock para la respuesta de la API
+        mock_response1 = mock.Mock()
+        mock_response1.json.return_value = [
+            {
+                "id": 1,
+                "name": {"es": "Producto 1"},
+                "price": 100,
+                "sku": "SKU123",
+                "variants": []
+            },
+            {
+                "id": 2,
+                "name": {"es": "Producto 2"},
+                "price": 200,
+                "sku": "SKU456",
+                "variants": []
+            }
+        ]
+        mock_response1.raise_for_status.return_value = None
+        
+        # En la segunda página no hay productos (fin de paginación)
+        mock_response2 = mock.Mock()
+        mock_response2.json.return_value = []
+        mock_response2.raise_for_status.return_value = None
+        
+        # Configurar el comportamiento del mock para devolver diferentes respuestas
+        mock_get.side_effect = [mock_response1, mock_response2]
+        
+        # Crear instancia de API con el archivo de configuración temporal
+        api = TiendaNubeAPI(config_path=self.config_path)
+        
+        # Ejecutar la función a probar
+        products = api.get_products()
+        
+        # Verificar resultados
+        self.assertEqual(len(products), 2)
+        self.assertEqual(products[0]["id"], 1)
+        self.assertEqual(products[0]["name"]["es"], "Producto 1")
+        self.assertEqual(products[1]["id"], 2)
+        self.assertEqual(products[1]["name"]["es"], "Producto 2")
+        
+        # Verificar que se hayan hecho las peticiones con los parámetros correctos
+        self.assertEqual(mock_get.call_count, 2)
+        args1, kwargs1 = mock_get.call_args_list[0]
+        self.assertEqual(kwargs1['params']['page'], 1)
+        self.assertEqual(kwargs1['params']['per_page'], 50)
+        
+        args2, kwargs2 = mock_get.call_args_list[1]
+        self.assertEqual(kwargs2['params']['page'], 2)
+        self.assertEqual(kwargs2['params']['per_page'], 50)
+    
+    @mock.patch('requests.put')
+    def test_update_product_price(self, mock_put):
+        """Prueba la función de actualización de precio"""
+        # Configurar mock para la respuesta de la API
+        mock_response = mock.Mock()
+        mock_response.raise_for_status.return_value = None
+        mock_put.return_value = mock_response
+        
+        # Crear instancia de API con el archivo de configuración temporal
+        api = TiendaNubeAPI(config_path=self.config_path)
+        
+        # Ejecutar la función a probar
+        result = api.update_product_price(1, 299.99)
+        
+        # Verificar resultado
+        self.assertTrue(result)
+        
+        # Verificar que se haya hecho la petición con los parámetros correctos
+        mock_put.assert_called_once()
+        args, kwargs = mock_put.call_args
+        self.assertEqual(kwargs['json']['price'], 299.99)
+    
+    @mock.patch('src.api.tiendanube.TiendaNubeAPI.get_products')
+    def test_get_product_by_sku(self, mock_get_products):
+        """Prueba la función de búsqueda de producto por SKU"""
+        # Configurar mock para la respuesta de get_products
+        mock_get_products.return_value = [
+            {
+                "id": 1,
+                "name": {"

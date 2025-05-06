@@ -1,0 +1,87 @@
+@echo off
+:: Script de instalación para ML-TN-Sync en Windows
+:: Autor: [Tu Nombre]
+:: Fecha: Mayo 2025
+
+echo ===================================================
+echo      Instalación de ML-TN-Sync (Windows)
+echo ===================================================
+echo.
+
+:: Obtener directorio del proyecto
+set "SCRIPT_DIR=%~dp0"
+set "PROJECT_DIR=%SCRIPT_DIR%.."
+
+cd /d "%PROJECT_DIR%" || (
+    echo Error: No se pudo acceder al directorio del proyecto
+    exit /b 1
+)
+
+echo Directorio del proyecto: %PROJECT_DIR%
+echo.
+
+:: Verificar si Python está instalado
+python --version > nul 2>&1
+if %ERRORLEVEL% NEQ 0 (
+    echo Error: Python no está instalado o no está en el PATH
+    echo Por favor, instala Python 3.8 o superior desde https://www.python.org/downloads/
+    echo Asegúrate de marcar la opción "Add Python to PATH" durante la instalación
+    exit /b 1
+)
+
+for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
+echo Usando Python %PYTHON_VERSION%
+
+:: Crear entorno virtual
+echo Creando entorno virtual...
+python -m venv ml_tn_sync_env
+
+:: Activar entorno virtual
+echo Activando entorno virtual...
+call ml_tn_sync_env\Scripts\activate.bat
+
+if %ERRORLEVEL% NEQ 0 (
+    echo Error: No se pudo activar el entorno virtual
+    exit /b 1
+)
+
+:: Actualizar pip
+echo Actualizando pip...
+python -m pip install --upgrade pip
+
+:: Instalar dependencias
+echo Instalando dependencias...
+pip install -r requirements.txt
+
+if %ERRORLEVEL% NEQ 0 (
+    echo Error: No se pudieron instalar las dependencias
+    exit /b 1
+)
+
+:: Verificar estructura de carpetas
+echo Verificando estructura de carpetas...
+if not exist logs mkdir logs
+
+:: Crear archivo de configuración si no existe
+if not exist "config\credentials.json" (
+    echo Creando archivo de configuración...
+    copy config\credentials.example.json config\credentials.json
+    
+    echo.
+    echo IMPORTANTE: Edita el archivo config\credentials.json
+    echo y agrega tus credenciales de Mercado Libre y Tienda Nube.
+)
+
+echo.
+echo Instalación completada correctamente
+echo.
+echo Para activar el entorno virtual, ejecuta:
+echo   ml_tn_sync_env\Scripts\activate
+echo.
+echo Para ejecutar el sincronizador:
+echo   python main.py
+echo   o
+echo   scripts\run.bat
+echo.
+
+pause
