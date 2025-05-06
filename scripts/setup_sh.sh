@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Script de instalación para ML-TN-Sync en Linux/Mac
-# Autor: [Tu Nombre]
+# Autor: Luca Belotti
 # Fecha: Mayo 2025
 
 echo "==================================================="
