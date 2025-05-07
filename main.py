@@ -6,7 +6,7 @@ Script principal para sincronización de precios entre Mercado Libre y Tienda Nu
 Ajusta los precios en Tienda Nube basándose en los precios de Mercado Libre,
 descontando automáticamente las comisiones.
 
-Autor: [Tu Nombre]
+Autor: Luca Belotti
 Fecha: Mayo 2025
 """
 
